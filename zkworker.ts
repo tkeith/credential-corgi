@@ -123,7 +123,7 @@ export type ZkappWorkerReponse = {
   id: number;
   data: any;
 };
-if (process.browser) {
+// if (process.browser) {
   addEventListener(
     "message",
     async (event: MessageEvent<ZkappWorkerRequest>) => {
@@ -136,4 +136,4 @@ if (process.browser) {
       postMessage(message);
     }
   );
-}
+// }

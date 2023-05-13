@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useGlobalState } from "@/app/page";
 import ZkappWorkerClient from "@/zkclient";
+import { snarkyPoker } from "@/utils";
 
 interface Structure {
   fullkey: string;
@@ -96,10 +97,11 @@ const IssueCredentialForm: React.FC = () => {
 
     console.log(JSON.stringify(parsedValues));
     (async function () {
-      console.log("load snarky");
-      await zkappWorkerClient!.loadSnarkyJS();
-      console.log("start hash");
-      console.log(await zkappWorkerClient!.zkpHashCredential(parsedValues));
+
+      await snarkyPoker(async function () {
+        console.log("start hash");
+        console.log(await zkappWorkerClient!.zkpHashCredential(parsedValues));
+      });
     })();
   };
 
