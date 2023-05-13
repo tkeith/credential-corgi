@@ -5,7 +5,14 @@ import { GlobalStateProvider } from "./page";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { arbitrum, goerli, mainnet, optimism, polygon } from "wagmi/chains";
+import {
+  arbitrum,
+  goerli,
+  mainnet,
+  optimism,
+  polygon,
+  optimismGoerli,
+} from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
@@ -14,7 +21,9 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
     polygon,
     optimism,
     arbitrum,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [goerli] : []),
+    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true"
+      ? [goerli, optimismGoerli]
+      : []),
   ],
   [publicProvider()]
 );
