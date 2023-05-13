@@ -2,24 +2,36 @@
 pragma solidity ^0.8.9;
 
 contract Corgi {
-    // uint public unlockTime;
-    address payable public owner;
+    // keccak256(encodePacked(creator, key)) => sha256(entityJson)
+    mapping(bytes32 => bytes32) public entities;
 
-    // event Withdrawal(uint amount, uint when);
+    event EntityCreated(address creator, string key, bytes32 lookupHash, bytes32 jsonHash);
 
-    constructor() payable {
-        owner = payable(msg.sender);
+    function getLookupHash(
+        address creator, string calldata key
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    creator,
+                    key
+                )
+            );
     }
 
-    // function withdraw() public {
-    //     // Uncomment this line, and the import of "hardhat/console.sol", to print a log in your terminal
-    //     // console.log("Unlock time is %o and block timestamp is %o", unlockTime, block.timestamp);
+    function lookupJsonHash(
+        address creator, string calldata key
+    ) public view returns (bytes32) {
+        return entities[getLookupHash(creator, key)];
+    }
 
-    //     require(block.timestamp >= unlockTime, "You can't withdraw yet");
-    //     require(msg.sender == owner, "You aren't the owner");
+    function createEntity(string calldata key, bytes32 jsonHash) public returns (bytes32) {
+        bytes32 lookupHash = getLookupHash(msg.sender, key);
+        if (entities[lookupHash] == 0) {
+            entities[lookupHash] = jsonHash;
+            emit EntityCreated(msg.sender, key, lookupHash, jsonHash);
+        }
 
-    //     emit Withdrawal(address(this).balance, block.timestamp);
-
-    //     owner.transfer(address(this).balance);
-    // }
+        return lookupHash;
+    }
 }
