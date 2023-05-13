@@ -64,7 +64,7 @@ const CreateCredentialStructureForm: React.FC = () => {
 
             const response = await axios.post("/api", {
               action: "save-credential-structure",
-              fullkey: "address:" + structureKey,
+              fullkey: address + ":structure:" + structureKey,
               structure: generatedStructure,
             });
 

@@ -39,6 +39,11 @@ export async function POST(request: Request) {
     await saveCredentialStructure(jsonIn.fullkey, jsonIn.structure);
   }
 
+  if (jsonIn.action == "get-credential-structure-list") {
+    const db = getDb("credential-structure");
+    jsonOut.list = db;
+  }
+
   return NextResponse.json(jsonOut);
 }
 
