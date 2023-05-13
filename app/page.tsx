@@ -27,7 +27,12 @@ import {
 } from "@heroicons/react/20/solid";
 import Image from "next/image";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
-import CreateCredentialStructureForm from "@/components/CreateCredentialStructureForm";
+import {
+  CredentialStructuresTab,
+  CredentialsTab,
+  ProofRequestsTab,
+  ProofsTab,
+} from "../components/tab-content";
 
 interface GlobalState {
   loadingText: string | null;
@@ -69,40 +74,6 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     <GlobalStateContext.Provider value={contextValue}>
       {children}
     </GlobalStateContext.Provider>
-  );
-};
-
-const CredentialStructuresTab: React.FC = () => {
-  return <CreateCredentialStructureForm />;
-};
-
-const CredentialsTab: React.FC = () => {
-  return (
-    <div>
-      {/* tab header */}
-      <h2 className="text-xl font-bold">Credentials</h2>
-      {/* tab content */}
-    </div>
-  );
-};
-
-const ProofRequestsTab: React.FC = () => {
-  return (
-    <div>
-      {/* tab header */}
-      <h2 className="text-xl font-bold">Proof Requests</h2>
-      {/* tab content */}
-    </div>
-  );
-};
-
-const ProofsTab: React.FC = () => {
-  return (
-    <div>
-      {/* tab header */}
-      <h2 className="text-xl font-bold">Proofs</h2>
-      {/* tab content */}
-    </div>
   );
 };
 
