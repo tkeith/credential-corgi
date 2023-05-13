@@ -44,13 +44,6 @@ const generateCredentialStructure = async (prompt: string) => {
     ],
   });
   const result = chat.data.choices[0]?.message!.content;
-  console.log("\n\n");
-  console.log("raw result", result);
-  console.log("\n\n");
-  console.log("json result", JSON.stringify(result));
-  console.log("\n\n");
-  console.log("typeof result", typeof result);
-  console.log("\n\n");
 
   return result;
 };
