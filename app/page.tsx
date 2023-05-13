@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState } from 'react'
+import { Fragment, useState, createContext, useContext, ReactNode, FC } from 'react'
 import { Dialog, Menu, Tab, Transition } from '@headlessui/react'
 import {
   Bars3Icon,
@@ -16,13 +16,69 @@ import {
 } from '@heroicons/react/24/outline'
 import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import Image from 'next/image';
+import { LoadingOverlay } from '@/components/LoadingOverlay';
+
+interface GlobalState {
+  loadingText: string | null
+}
+
+interface GlobalStateContextProps {
+  state: GlobalState
+  setState: React.Dispatch<React.SetStateAction<GlobalState>>
+  load: (text: string) => void
+  stopLoad: () => void
+}
+
+const GlobalStateContext = createContext<GlobalStateContextProps | undefined>(undefined);
+export const useGlobalState = () => {
+  const context = useContext(GlobalStateContext);
+  if (context === undefined) {
+    throw new Error('useGlobalState must be used within a GlobalStateProvider');
+  }
+  return context;
+};
+export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
+  const [state, setState] = useState<GlobalState>({
+    loadingText: null,
+  });
+
+  function load(text: string) {
+    setState(prevState => ({ ...prevState, loadingText: text }));
+  }
+
+  function stopLoad() {
+    setState(prevState => ({ ...prevState, loadingText: null }));
+  }
+
+  const contextValue = { state, setState, load, stopLoad }
+
+  return (
+    <GlobalStateContext.Provider value={contextValue}>
+      {children}
+    </GlobalStateContext.Provider>
+  );
+};
 
 const CredentialStructuresTab: React.FC = () => {
+  const { state, setState, load, stopLoad } = useGlobalState();
+
+  const handleClick = () => {
+    load('Loading...');
+
+    setTimeout(() => {
+      stopLoad()
+    }, 3000); // 3 seconds
+  };
+
   return (
     <div>
       {/* tab header */}
       <h2 className="text-xl font-bold">Credential Structures</h2>
       {/* tab content */}
+      <div>
+        <button onClick={handleClick}>Click me</button>
+        {state.loadingText && <p>Loading...</p>}
+      </div>
     </div>
   );
 };
@@ -66,12 +122,8 @@ const navigation = [
   { name: 'Proofs', icon: HomeIcon, component: <ProofsTab /> },
 ]
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
-}
-
 export default function Page() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { state } = useGlobalState();
 
   return (
     <>
@@ -87,9 +139,9 @@ export default function Page() {
         <Tab.Group>
 
           {/* Static sidebar for desktop */}
-          <div className="flex-none w-72">
+          <div className="flex-none w-72 border-r border-gray-200">
             {/* Sidebar component, swap this element with another sidebar if you like */}
-            <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4 pt-4">
+            <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 pt-4">
               <div className="flex h-24 items-center">
                 {/* next.js image public/logo.png */}
                 <Image src="/corgi-logo.png" alt="logo" width={80} height={80} />
@@ -134,6 +186,7 @@ export default function Page() {
           </div>
         </Tab.Group>
       </div>
+      <LoadingOverlay loadingText={state.loadingText} />
     </>
   )
 }
