@@ -27,12 +27,20 @@ import {
 } from "@heroicons/react/20/solid";
 import Image from "next/image";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { ConnectWalletOverlay } from "@/components/ConnectWalletOverlay";
 import {
   CredentialStructuresTab,
   CredentialsTab,
   ProofRequestsTab,
   ProofsTab,
 } from "../components/tab-content";
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useEnsAvatar,
+  useEnsName,
+} from "wagmi";
 
 interface GlobalState {
   loadingText: string | null;
@@ -90,81 +98,82 @@ const navigation = [
 
 export default function Page() {
   const { state } = useGlobalState();
+  const { address, connector, isConnected } = useAccount();
 
-  return (
-    <>
-      {/*
-        This example requires updating your template:
-
-        ```
-        <html class="h-full bg-white">
-        <body class="h-full">
-        ```
-      */}
-      <div className="flex h-screen">
-        <Tab.Group>
-          {/* Static sidebar for desktop */}
-          <div className="flex-none w-72 border-r border-gray-200">
-            {/* Sidebar component, swap this element with another sidebar if you like */}
-            <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 pt-4">
-              <div className="flex h-24 items-center">
-                {/* next.js image public/logo.png */}
-                <Image
-                  src="/corgi-logo.png"
-                  alt="logo"
-                  width={80}
-                  height={80}
-                />
+  if (isConnected) {
+    return (
+      <>
+        <div className="flex h-screen">
+          <Tab.Group>
+            {/* Static sidebar for desktop */}
+            <div className="flex-none w-72 border-r border-gray-200">
+              {/* Sidebar component, swap this element with another sidebar if you like */}
+              <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4 pt-4">
+                <div className="flex h-24 items-center">
+                  {/* next.js image public/logo.png */}
+                  <Image
+                    src="/corgi-logo.png"
+                    alt="logo"
+                    width={80}
+                    height={80}
+                  />
+                </div>
+                <nav className="flex flex-1 flex-col">
+                  <Tab.List className="flex flex-1 flex-col gap-y-3 -mx-2 space-y-1">
+                    {navigation.map((tab) => (
+                      <Tab key={tab.name} as={Fragment}>
+                        {({ selected }) => (
+                          /* Use the `selected` state to conditionally style the selected tab. */
+                          <button
+                            className={`group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold focus:outline-none focus:ring-0 ${
+                              selected
+                                ? "bg-gray-50 text-corgi"
+                                : "text-gray-700 hover:text-corgi hover:bg-gray-50"
+                            }`}
+                          >
+                            <tab.icon
+                              className={`h-6 w-6 shrink-0
+                            ${
+                              selected
+                                ? "text-corgi"
+                                : "text-gray-400 group-hover:text-corgi"
+                            }`}
+                              aria-hidden="true"
+                            />
+                            {tab.name}
+                          </button>
+                        )}
+                      </Tab>
+                    ))}
+                  </Tab.List>
+                </nav>
               </div>
-              <nav className="flex flex-1 flex-col">
-                <Tab.List className="flex flex-1 flex-col gap-y-3 -mx-2 space-y-1">
-                  {navigation.map((tab) => (
-                    <Tab key={tab.name} as={Fragment}>
-                      {({ selected }) => (
-                        /* Use the `selected` state to conditionally style the selected tab. */
-                        <button
-                          className={`group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold focus:outline-none focus:ring-0 ${
-                            selected
-                              ? "bg-gray-50 text-corgi"
-                              : "text-gray-700 hover:text-corgi hover:bg-gray-50"
-                          }`}
-                        >
-                          <tab.icon
-                            className={`h-6 w-6 shrink-0
-                          ${
-                            selected
-                              ? "text-corgi"
-                              : "text-gray-400 group-hover:text-corgi"
-                          }`}
-                            aria-hidden="true"
-                          />
-                          {tab.name}
-                        </button>
-                      )}
-                    </Tab>
-                  ))}
-                </Tab.List>
-              </nav>
             </div>
-          </div>
 
-          <div className="flex-auto">
-            <main>
-              <Tab.Panels className="m-4">
-                {navigation.map((tab) => (
-                  <Tab.Panel
-                    key={tab.name}
-                    className="bg-white rounded-xl p-3 text-gray-900"
-                  >
-                    {tab.component}
-                  </Tab.Panel>
-                ))}
-              </Tab.Panels>
-            </main>
-          </div>
-        </Tab.Group>
-      </div>
-      <LoadingOverlay loadingText={state.loadingText} />
-    </>
-  );
+            <div className="flex-auto">
+              <main>
+                <Tab.Panels className="m-4">
+                  {navigation.map((tab) => (
+                    <Tab.Panel
+                      key={tab.name}
+                      className="bg-white rounded-xl p-3 text-gray-900"
+                    >
+                      {tab.component}
+                    </Tab.Panel>
+                  ))}
+                </Tab.Panels>
+              </main>
+            </div>
+          </Tab.Group>
+        </div>
+        <LoadingOverlay loadingText={state.loadingText} />
+      </>
+    );
+  } else {
+    return (
+      <>
+        <ConnectWalletOverlay />
+      </>
+    );
+  }
 }
