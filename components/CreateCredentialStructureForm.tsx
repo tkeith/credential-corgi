@@ -1,4 +1,3 @@
-// components/CreateCredentialStructureForm.tsx
 import React, { useState } from "react";
 import axios from "axios";
 import { useGlobalState } from "@/app/page";
@@ -6,6 +5,7 @@ import { useGlobalState } from "@/app/page";
 const CreateCredentialStructureForm: React.FC = () => {
   const [description, setDescription] = useState("");
   const [generatedStructure, setGeneratedStructure] = useState("");
+  const [structureKey, setStructureKey] = useState("");
   const { state, setState, load, stopLoad } = useGlobalState();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,6 +22,12 @@ const CreateCredentialStructureForm: React.FC = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const handlePublish = () => {
+    alert(
+      `Structure key: ${structureKey}\nStructure JSON: ${generatedStructure}`
+    );
   };
 
   return (
@@ -42,11 +48,11 @@ const CreateCredentialStructureForm: React.FC = () => {
           placeholder="a medical insurance card including pharmacy copay and expiration date"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="shadow-sm focus:ring-corgi focus:border-corgi block w-full sm:text-sm border-gray-300 rounded-md"
+          className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"
         />
         <button
           type="submit"
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-corgi hover:bg-corgi-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-corgi"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-corgi hover:bg-corgi-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-corgi"
         >
           Generate
         </button>
@@ -59,6 +65,27 @@ const CreateCredentialStructureForm: React.FC = () => {
               {JSON.stringify(JSON.parse(generatedStructure), null, 2)}
             </code>
           </pre>
+          <div className="space-y-2">
+            <label
+              htmlFor="structureKey"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Structure key
+            </label>
+            <input
+              id="structureKey"
+              name="structureKey"
+              value={structureKey}
+              onChange={(e) => setStructureKey(e.target.value)}
+              className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"
+            />
+            <button
+              onClick={handlePublish}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-corgi hover:bg-corgi-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-corgi"
+            >
+              Publish
+            </button>
+          </div>
         </div>
       )}
     </div>
