@@ -100,7 +100,6 @@ export default function Page() {
   const { state } = useGlobalState();
   const { address, connector, isConnected } = useAccount();
 
-  if (isConnected) {
     return (
       <>
         <div className="flex h-screen">
@@ -167,13 +166,8 @@ export default function Page() {
           </Tab.Group>
         </div>
         <LoadingOverlay loadingText={state.loadingText} />
+        {!isConnected && <ConnectWalletOverlay />}
       </>
     );
-  } else {
-    return (
-      <>
-        <ConnectWalletOverlay />
-      </>
-    );
-  }
+
 }
