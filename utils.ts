@@ -1,5 +1,4 @@
 import * as crypto from "crypto";
-import { Poseidon, Field } from "snarkyjs";
 
 export function myStringify(obj: any) {
   return JSON.stringify(obj, null, 2);
@@ -22,7 +21,9 @@ export function hashStringToHexStringWithPrefix(input: string): string {
   return "0x" + hashStringToHexString(input);
 }
 
-function largeNumberStringToHexString(largeNumberString: string): string {
+export function largeNumberStringToHexString(
+  largeNumberString: string
+): string {
   const bigInt = BigInt(largeNumberString);
   let hexString = bigInt.toString(16);
 
@@ -32,4 +33,12 @@ function largeNumberStringToHexString(largeNumberString: string): string {
   }
 
   return "0x" + hexString;
+}
+
+export function hashStringToBigInt(input: string): bigint {
+  const hash = crypto.createHash("sha256");
+  hash.update(input);
+  const hashedString = hash.digest("hex");
+  let hex = "0x" + hashedString;
+  return BigInt(hex);
 }

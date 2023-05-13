@@ -2,6 +2,7 @@ import { myStringify } from "@/utils";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { NextResponse } from "next/server";
 import * as openailib from "openai";
+import * as crypto from "crypto";
 
 const GENERATE_STRUCTURE_PROMPT = readFileSync(
   "prompts/generate-structure.md"
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
   }
 
   if (jsonIn.action == "get-credential-structure-list") {
+    // console.log(zkpHashCredential({ test: 123 }));
     const db = getDb("credential-structure");
     jsonOut.list = db;
   }

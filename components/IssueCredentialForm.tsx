@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useGlobalState } from "@/app/page";
+import ZkappWorkerClient from "@/zkclient";
 
 interface Structure {
   fullkey: string;
@@ -15,6 +16,8 @@ const IssueCredentialForm: React.FC = () => {
   );
   const [formValues, setFormValues] = useState<{ [key: string]: any }>({});
   const [error, setError] = useState<string | null>(null);
+
+  const zkappWorkerClient = new ZkappWorkerClient();
 
   useEffect(() => {
     const fetchStructures = async () => {
@@ -91,7 +94,13 @@ const IssueCredentialForm: React.FC = () => {
       }
     }
 
-    alert(JSON.stringify(parsedValues));
+    console.log(JSON.stringify(parsedValues));
+    (async function () {
+      console.log("load snarky");
+      await zkappWorkerClient!.loadSnarkyJS();
+      console.log("start hash");
+      console.log(await zkappWorkerClient!.zkpHashCredential(parsedValues));
+    })();
   };
 
   return (
