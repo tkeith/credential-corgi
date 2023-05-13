@@ -53,7 +53,7 @@ interface GlobalStateContextProps {
   state: GlobalState;
   setState: React.Dispatch<React.SetStateAction<GlobalState>>;
   load: (text: string, key?: string) => void;
-  stopLoad: (key?: string) => void;
+  stopLoad: (key?: string) => boolean;
 }
 
 const GlobalStateContext = createContext<GlobalStateContextProps | undefined>(
@@ -80,13 +80,14 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
     }));
   }
 
-  function stopLoad(key?: string) {
-    if (key && key !== state.loadingKey) return;
+  function stopLoad(key?: string): boolean {
+    if (key && key !== state.loadingKey) return false;
     setState((prevState) => ({
       ...prevState,
       loadingText: null,
       loadingKey: null,
     }));
+    return true;
   }
 
   const contextValue = { state, setState, load, stopLoad };

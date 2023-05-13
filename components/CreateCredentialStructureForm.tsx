@@ -6,6 +6,7 @@ import {
   usePrepareContractWrite,
   useContractWrite,
   useWaitForTransaction,
+  useAccount,
 } from "wagmi";
 import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
 import {
@@ -23,6 +24,7 @@ const CreateCredentialStructureForm: React.FC = () => {
   const [structureKey, setStructureKey] = useState("");
   const { state, setState, load, stopLoad } = useGlobalState();
   const { chain, chains } = useNetwork();
+  const { address, isConnected } = useAccount();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,11 +54,27 @@ const CreateCredentialStructureForm: React.FC = () => {
   });
 
   useEffect(() => {
-    if (isLoading) {
-      load("Publishing credential structure...", "pub-cred-struct");
-    } else {
-      stopLoad("pub-cred-struct");
-    }
+    (async function () {
+      if (isLoading) {
+        load("Publishing credential structure...", "pub-cred-struct");
+      } else {
+        if (stopLoad("pub-cred-struct")) {
+          try {
+            load("Saving credential structure...");
+
+            const response = await axios.post("/api", {
+              action: "save-credential-structure",
+              fullkey: "address:" + structureKey,
+              structure: generatedStructure,
+            });
+
+            stopLoad();
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      }
+    })();
   }, [isLoading]);
 
   const handlePublish = () => {
