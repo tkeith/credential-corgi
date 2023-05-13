@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useGlobalState } from "@/app/page";
-import { useNetwork, usePrepareContractWrite, useContractWrite } from "wagmi";
+import {
+  useNetwork,
+  usePrepareContractWrite,
+  useContractWrite,
+  useWaitForTransaction,
+} from "wagmi";
 import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
 import {
   hashString,
@@ -36,26 +41,25 @@ const CreateCredentialStructureForm: React.FC = () => {
     }
   };
 
-  // const { config } = usePrepareContractWrite({
-  //   address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
-  //   abi: ABI,
-  //   functionName: "createEntity",
-  //   args: [hashString(structureKey), generatedStructure],
-  // });
-
-  // const { write } = useContractWrite(config);
-
-  const { write } = useContractWrite({
+  const { data, write } = useContractWrite({
     address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
     abi: ABI,
     functionName: "createEntity",
   });
 
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  useEffect(() => {
+    if (isLoading) {
+      load("Publishing credential structure...", "pub-cred-struct");
+    } else {
+      stopLoad("pub-cred-struct");
+    }
+  }, [isLoading]);
+
   const handlePublish = () => {
-    console.log(chain!.network);
-    console.log(JSON.stringify(CONTRACT_ADDRESSES));
-    console.log(CONTRACT_ADDRESSES[chain!.network] as `0x${string}`);
-    console.log(ABI);
     if (!write) {
       alert("not ready yet...");
       return;
@@ -74,8 +78,8 @@ const CreateCredentialStructureForm: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-corgi font-bold text-xl">
+    <div>
+      <h1 className="my-4 text-corgi font-bold text-xl">
         Create a new credential structure
       </h1>
       <form onSubmit={handleSubmit} className="space-y-2">
@@ -101,35 +105,50 @@ const CreateCredentialStructureForm: React.FC = () => {
         </button>
       </form>
       {generatedStructure && (
-        <div>
-          <h2 className="text-corgi font-bold text-lg">Generated structure</h2>
-          <pre className="bg-gray-200 p-4 rounded-md">
-            <code>
-              {JSON.stringify(JSON.parse(generatedStructure), null, 2)}
-            </code>
-          </pre>
-          <div className="space-y-2">
-            <label
-              htmlFor="structureKey"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Structure key
-            </label>
-            <input
-              id="structureKey"
-              name="structureKey"
-              value={structureKey}
-              onChange={(e) => setStructureKey(e.target.value)}
-              className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"
-            />
-            <button
-              onClick={handlePublish}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-corgi hover:bg-corgi-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-corgi"
-            >
-              Publish
-            </button>
+        <>
+          <div>
+            <h1 className="my-4 text-corgi font-bold text-xl">
+              Generated structure
+            </h1>
+            <pre className="bg-gray-200 p-4 rounded-md">
+              <code>
+                {JSON.stringify(JSON.parse(generatedStructure), null, 2)}
+              </code>
+            </pre>
+            <div className="space-y-2">
+              <label
+                htmlFor="structureKey"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Structure key
+              </label>
+              <input
+                id="structureKey"
+                name="structureKey"
+                value={structureKey}
+                onChange={(e) => setStructureKey(e.target.value)}
+                className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"
+              />
+              <button
+                onClick={handlePublish}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-corgi hover:bg-corgi-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-corgi"
+              >
+                Publish
+              </button>
+            </div>
           </div>
-        </div>
+          {isSuccess && (
+            <div>
+              <h1 className="my-4 text-corgi font-bold text-xl">
+                Publish success!
+              </h1>
+              <p>Transaction ID:</p>
+              <pre className="bg-gray-200 p-4 rounded-md">
+                <code>{data?.hash}</code>
+              </pre>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

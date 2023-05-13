@@ -46,13 +46,14 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 interface GlobalState {
   loadingText: string | null;
+  loadingKey: string | null;
 }
 
 interface GlobalStateContextProps {
   state: GlobalState;
   setState: React.Dispatch<React.SetStateAction<GlobalState>>;
-  load: (text: string) => void;
-  stopLoad: () => void;
+  load: (text: string, key?: string) => void;
+  stopLoad: (key?: string) => void;
 }
 
 const GlobalStateContext = createContext<GlobalStateContextProps | undefined>(
@@ -68,14 +69,24 @@ export const useGlobalState = () => {
 export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<GlobalState>({
     loadingText: null,
+    loadingKey: null,
   });
 
-  function load(text: string) {
-    setState((prevState) => ({ ...prevState, loadingText: text }));
+  function load(text: string, key?: string) {
+    setState((prevState) => ({
+      ...prevState,
+      loadingText: text,
+      loadingKey: key ?? null,
+    }));
   }
 
-  function stopLoad() {
-    setState((prevState) => ({ ...prevState, loadingText: null }));
+  function stopLoad(key?: string) {
+    if (key && key !== state.loadingKey) return;
+    setState((prevState) => ({
+      ...prevState,
+      loadingText: null,
+      loadingKey: null,
+    }));
   }
 
   const contextValue = { state, setState, load, stopLoad };
