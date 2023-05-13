@@ -1,12 +1,23 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useGlobalState } from "@/app/page";
+import { useNetwork, usePrepareContractWrite, useContractWrite } from "wagmi";
+import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
+import {
+  hashString,
+  hashStringToHexString,
+  hashStringToHexStringWithPrefix,
+} from "@/utils";
 
 const CreateCredentialStructureForm: React.FC = () => {
   const [description, setDescription] = useState("");
   const [generatedStructure, setGeneratedStructure] = useState("");
+  // const [generatedStructureHash, setGeneratedStructureHash] = useState(
+  //   Buffer.from("")
+  // );
   const [structureKey, setStructureKey] = useState("");
   const { state, setState, load, stopLoad } = useGlobalState();
+  const { chain, chains } = useNetwork();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,14 +29,46 @@ const CreateCredentialStructureForm: React.FC = () => {
         prompt: description,
       });
       setGeneratedStructure(response.data.structure);
+      // setGeneratedStructureHash(hashString(generatedStructure));
       stopLoad();
     } catch (error) {
       console.error(error);
     }
   };
 
+  // const { config } = usePrepareContractWrite({
+  //   address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
+  //   abi: ABI,
+  //   functionName: "createEntity",
+  //   args: [hashString(structureKey), generatedStructure],
+  // });
+
+  // const { write } = useContractWrite(config);
+
+  const { write } = useContractWrite({
+    address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
+    abi: ABI,
+    functionName: "createEntity",
+  });
+
   const handlePublish = () => {
-    alert(
+    console.log(chain!.network);
+    console.log(JSON.stringify(CONTRACT_ADDRESSES));
+    console.log(CONTRACT_ADDRESSES[chain!.network] as `0x${string}`);
+    console.log(ABI);
+    if (!write) {
+      alert("not ready yet...");
+      return;
+    }
+
+    write({
+      args: [
+        "structure:" + structureKey,
+        hashStringToHexStringWithPrefix(structureKey),
+      ],
+    });
+
+    console.log(
       `Structure key: ${structureKey}\nStructure JSON: ${generatedStructure}`
     );
   };
