@@ -119,7 +119,7 @@ export default function Page() {
               <nav className="flex flex-1 flex-col">
                 <Tab.List className="flex flex-1 flex-col gap-y-3 -mx-2 space-y-1">
                   {navigation.map((tab) => (
-                    <Tab as={Fragment}>
+                    <Tab key={tab.name} as={Fragment}>
                       {({ selected }) => (
                         /* Use the `selected` state to conditionally style the selected tab. */
                         <button
