@@ -45,6 +45,11 @@ const config: HardhatUserConfig & {
       url: "https://rpc.testnet.mantle.xyz",
       accounts: accounts,
     },
+    linea: {
+      url: "https://rpc.goerli.linea.build/",
+      chainId: 59140,
+      accounts: accounts,
+    },
   },
   etherscan: {
     apiKey: {

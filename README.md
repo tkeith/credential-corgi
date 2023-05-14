@@ -16,4 +16,6 @@
 
 [Mantle Testnet](https://explorer.testnet.mantle.xyz/address/0x041d1c4a7B6099A63f4291e22967B25874D39Efb)
 
+[Linea](https://explorer.goerli.linea.build/address/0x041d1c4a7B6099A63f4291e22967B25874D39Efb)
+
 ![Corgi Logo](https://raw.githubusercontent.com/tkeith/credential-corgi/main/public/corgi-logo.png)
