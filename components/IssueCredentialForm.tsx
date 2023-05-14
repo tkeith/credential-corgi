@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useGlobalState } from "@/app/page";
 import ZkappWorkerClient from "@/zkclient";
-import { snarkyPoker } from "@/utils";
+import { hashStringToHexString, snarkyPoker } from "@/utils";
 import { Field } from "snarkyjs";
 import { useContractWrite, useNetwork, useWaitForTransaction } from "wagmi";
 import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
@@ -164,7 +164,7 @@ const IssueCredentialForm: React.FC = () => {
     write({
       args: [
         "certification:" + credentialHash,
-        "0x1111111111111111111111111111111111111111111111111111111111111111",
+        hashStringToHexString(credentialHash!),
       ],
     });
   };

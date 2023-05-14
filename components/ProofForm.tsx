@@ -3,11 +3,15 @@ import axios from "axios";
 import { useGlobalState } from "@/app/page";
 import {
   hashStringToBigInt,
+  hashStringToHexString,
+  hashStringToHexStringWithPrefix,
   hexToString,
   insertNewlineEveryNChars,
   snarkyPoker,
 } from "@/utils";
 import ZkappWorkerClient from "@/zkclient";
+import { useContractWrite, useNetwork, useWaitForTransaction } from "wagmi";
+import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
 
 const ProofForm: React.FC = () => {
   const { load, stopLoad } = useGlobalState();
@@ -124,6 +128,43 @@ const ProofForm: React.FC = () => {
     setProofData(proof);
   };
 
+  const { chain, chains } = useNetwork();
+
+  const { data, write } = useContractWrite({
+    address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
+    abi: ABI,
+    functionName: "createEntity",
+  });
+
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  useEffect(() => {
+    (async function () {
+      if (isLoading) {
+        load("Publishing proof...", "pub-proof");
+      } else {
+        if (stopLoad("pub-proof")) {
+        }
+      }
+    })();
+  }, [isLoading]);
+
+  const handlePublish = () => {
+    if (!write) {
+      alert("not ready yet...");
+      return;
+    }
+
+    write({
+      args: [
+        "proof:" + hashStringToHexString(proofData),
+        hashStringToHexStringWithPrefix(proofData),
+      ],
+    });
+  };
+
   return (
     <div>
       <h1 className="my-4 text-corgi font-bold text-xl">Proof Request Code</h1>
@@ -180,10 +221,34 @@ const ProofForm: React.FC = () => {
       )}
       {proofData && (
         <>
-          <h1 className="my-4 text-corgi font-bold text-xl">Proof Data</h1>
-          <pre className="bg-gray-200 p-4 rounded-md">
-            <code>{insertNewlineEveryNChars(proofData, 90)}</code>
+          <h1 className="my-4 text-corgi font-bold text-xl">
+            {(!proofData.startsWith("failed") && "Proof Data") ||
+              "Proof Failed"}
+          </h1>
+          <pre className="bg-gray-200 p-4 rounded-md mb-2">
+            <code>{insertNewlineEveryNChars(proofData, 200)}</code>
           </pre>
+          {!proofData.startsWith("failed") && (
+            <>
+              <button
+                onClick={handlePublish}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-corgi hover:bg-corgi-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-corgi"
+              >
+                Publish Proof
+              </button>
+              {isSuccess && (
+                <div>
+                  <h1 className="my-4 text-corgi font-bold text-xl">
+                    Publish success!
+                  </h1>
+                  <p>Transaction ID:</p>
+                  <pre className="bg-gray-200 p-4 rounded-md">
+                    <code>{data?.hash}</code>
+                  </pre>
+                </div>
+              )}
+            </>
+          )}
         </>
       )}
     </div>
