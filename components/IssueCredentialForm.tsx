@@ -4,6 +4,8 @@ import { useGlobalState } from "@/app/page";
 import ZkappWorkerClient from "@/zkclient";
 import { snarkyPoker } from "@/utils";
 import { Field } from "snarkyjs";
+import { useContractWrite, useNetwork, useWaitForTransaction } from "wagmi";
+import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
 
 interface Structure {
   fullkey: string;
@@ -123,6 +125,43 @@ const IssueCredentialForm: React.FC = () => {
     })();
   };
 
+  const { chain, chains } = useNetwork();
+
+  const { data, write } = useContractWrite({
+    address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
+    abi: ABI,
+    functionName: "createEntity",
+  });
+
+  const { isLoading, isSuccess } = useWaitForTransaction({
+    hash: data?.hash,
+  });
+
+  useEffect(() => {
+    (async function () {
+      if (isLoading) {
+        load("Publishing credential certification...", "pub-cred-cert");
+      } else {
+        if (stopLoad("pub-cred-cert")) {
+        }
+      }
+    })();
+  }, [isLoading]);
+
+  const handlePublish = () => {
+    if (!write) {
+      alert("not ready yet...");
+      return;
+    }
+
+    write({
+      args: [
+        "certification:" + credentialHash,
+        "0x1111111111111111111111111111111111111111111111111111111111111111",
+      ],
+    });
+  };
+
   return (
     <div>
       <h1 className="my-4 text-corgi font-bold text-xl">Issue a credential</h1>
@@ -189,6 +228,23 @@ const IssueCredentialForm: React.FC = () => {
           <pre className="bg-gray-200 p-4 rounded-md">
             <code>{credentialHash}</code>
           </pre>
+          <button
+            onClick={handlePublish}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-corgi hover:bg-corgi-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-corgi"
+          >
+            Publish certification to the chain
+          </button>
+          {isSuccess && (
+            <div>
+              <h1 className="my-4 text-corgi font-bold text-xl">
+                Publish success!
+              </h1>
+              <p>Transaction ID:</p>
+              <pre className="bg-gray-200 p-4 rounded-md">
+                <code>{data?.hash}</code>
+              </pre>
+            </div>
+          )}
         </>
       )}
     </div>
