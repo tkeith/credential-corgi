@@ -11,8 +11,8 @@ export type Credential = {
 export default class ZkappWorkerClient {
   // ---------------------------------------------------------------------------------------
 
-  loadSnarkyJS() {
-    return this._call("loadSnarkyJS", {});
+  async pingSnarky() {
+    return this._call("pingSnarky", {});
   }
 
   async zkpHashCredential(credential: Credential) {
@@ -22,6 +22,28 @@ export default class ZkappWorkerClient {
       credential: credential,
     });
     console.log("debug 3");
+
+    return result;
+  }
+
+  async proveCredentialMeetsRequirements(
+    stringHashRequirement: bigint,
+    booleanRequirement: boolean,
+    intMin: number,
+    intMax: number,
+    stringHashVal: bigint,
+    booleanVal: boolean,
+    intVal: number
+  ) {
+    const result = await this._call("proveCredentialMeetsRequirements", {
+      stringHashRequirement,
+      booleanRequirement,
+      intMin,
+      intMax,
+      stringHashVal,
+      booleanVal,
+      intVal,
+    });
 
     return result;
   }

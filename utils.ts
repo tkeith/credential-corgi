@@ -40,7 +40,7 @@ export function hashStringToBigInt(input: string): bigint {
   hash.update(input);
   const hashedString = hash.digest("hex");
   let hex = "0x" + hashedString;
-  return BigInt(hex);
+  return BigInt(hex) / BigInt(10);
 }
 
 // export async function snarkyPoker(
@@ -68,7 +68,7 @@ export async function snarkyPoker(g: () => Promise<any>): Promise<any> {
         // Ignore errors, or you could handle them in some way if needed
       }
     };
-    innerFn()
+    innerFn();
     const intervalId = window.setInterval(innerFn, 500);
   });
 }
@@ -88,4 +88,8 @@ export function hexToString(hex: string) {
     result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
   }
   return result;
+}
+
+export function insertNewlineEveryNChars(str: string, n = 90) {
+  return str.match(new RegExp(".{1," + n + "}", "g"))!.join("\n");
 }

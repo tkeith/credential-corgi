@@ -110,7 +110,7 @@ const CreateCredentialStructureForm: React.FC = () => {
         <textarea
           id="description"
           name="description"
-          placeholder="a medical insurance card including pharmacy copay and expiration date"
+          placeholder="Example: a medical insurance card including pharmacy copay and expiration date"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"

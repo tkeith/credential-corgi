@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useGlobalState } from "@/app/page";
-
-const hexToString = (hex: string) => {
-  let str = "";
-  for (let i = 0; i < hex.length; i += 2) {
-    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-  }
-  return str;
-};
+import {
+  hashStringToBigInt,
+  hexToString,
+  insertNewlineEveryNChars,
+  snarkyPoker,
+} from "@/utils";
+import ZkappWorkerClient from "@/zkclient";
 
 const ProofForm: React.FC = () => {
   const { load, stopLoad } = useGlobalState();
@@ -22,12 +21,12 @@ const ProofForm: React.FC = () => {
   useEffect(() => {
     const fetchStructures = async () => {
       try {
-        load("Fetching credential structures...");
+        // load("Fetching credential structures...");
         const response = await axios.post("/api", {
           action: "get-credential-structure-list",
         });
         setStructures(response.data.list);
-        stopLoad();
+        // stopLoad();
       } catch (error) {
         console.error(error);
       }
@@ -54,9 +53,70 @@ const ProofForm: React.FC = () => {
     }
   }, [proofRequestCode, structures]);
 
+  const zkappWorkerClient = new ZkappWorkerClient();
+
   const generateProof = async () => {
-    // Add your proof generation logic here
-    return 123;
+    load("Generating proof, this takes ~30 seconds...");
+    await snarkyPoker(async function () {
+      return await zkappWorkerClient!.pingSnarky();
+    });
+
+    const proofRequest = JSON.parse(hexToString(proofRequestCode));
+    const credential = JSON.parse(credentialData);
+
+    type AnyObj = {
+      [key: string]: string | boolean | number | bigint;
+    };
+
+    function firstOfStringBoolInt(
+      obj: AnyObj
+    ): Array<string | boolean | number | bigint | undefined> {
+      let firstString: string | undefined;
+      let firstBool: boolean | undefined;
+      let firstInt: number | bigint | undefined;
+
+      const keys = Object.keys(obj).sort();
+
+      for (const key of keys) {
+        const val = obj[key];
+        if (typeof val === "string" && firstString === undefined) {
+          firstString = val;
+        } else if (typeof val === "boolean" && firstBool === undefined) {
+          firstBool = val;
+        } else if (
+          (typeof val === "number" || typeof val === "bigint") &&
+          firstInt === undefined
+        ) {
+          firstInt = val;
+        }
+
+        if (
+          firstString !== undefined &&
+          firstBool !== undefined &&
+          firstInt !== undefined
+        ) {
+          break;
+        }
+      }
+
+      return [firstString, firstBool, firstInt];
+    }
+
+    const [credString, credBool, credInt] = firstOfStringBoolInt(credential);
+
+    const proof: string =
+      (await zkappWorkerClient!.proveCredentialMeetsRequirements(
+        hashStringToBigInt(proofRequest.stringRequirement),
+        proofRequest.booleanRequirement,
+        proofRequest.integerMinimum,
+        proofRequest.integerMaximum,
+        hashStringToBigInt(credString as string),
+        credBool as boolean,
+        credInt as number
+      )) as string;
+    console.log("proof received:", proof);
+    stopLoad();
+    return proof;
   };
 
   const handleGenerateProof = async () => {
@@ -74,6 +134,10 @@ const ProofForm: React.FC = () => {
       />
       {credentialStructure && (
         <>
+          <h1 className="my-4 text-corgi font-bold text-xl">Proof Request</h1>
+          <pre className="bg-gray-200 p-4 rounded-md">
+            <code>{hexToString(proofRequestCode)}</code>
+          </pre>
           <h1 className="my-4 text-corgi font-bold text-xl">
             Credential Structure
           </h1>
@@ -82,7 +146,7 @@ const ProofForm: React.FC = () => {
           </pre>
           <label
             htmlFor="credentialData"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 mt-2"
           >
             Credential Data
           </label>
@@ -91,11 +155,11 @@ const ProofForm: React.FC = () => {
             name="credentialData"
             value={credentialData}
             onChange={(e) => setCredentialData(e.target.value)}
-            className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"
+            className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1 my-1 h-32"
           />
           <label
             htmlFor="credentialHash"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-sm font-medium text-gray-700 mt-2"
           >
             Credential Hash
           </label>
@@ -104,7 +168,7 @@ const ProofForm: React.FC = () => {
             name="credentialHash"
             value={credentialHash}
             onChange={(e) => setCredentialHash(e.target.value)}
-            className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"
+            className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1 my-1"
           />
           <button
             onClick={handleGenerateProof}
@@ -118,7 +182,7 @@ const ProofForm: React.FC = () => {
         <>
           <h1 className="my-4 text-corgi font-bold text-xl">Proof Data</h1>
           <pre className="bg-gray-200 p-4 rounded-md">
-            <code>{JSON.stringify(proofData, null, 2)}</code>
+            <code>{insertNewlineEveryNChars(proofData, 90)}</code>
           </pre>
         </>
       )}

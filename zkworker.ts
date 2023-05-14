@@ -1,6 +1,6 @@
 import { Mina, PublicKey, fetchAccount } from "snarkyjs";
 import * as crypto from "crypto";
-import { Poseidon, Field } from "snarkyjs";
+import { Poseidon, Field, Bool, Experimental } from "snarkyjs";
 
 // ---------------------------------------------------------------------------------------
 
@@ -26,18 +26,18 @@ const functions = {
   // compileContract: async (args: {}) => {
   //   await state.ConcealedCare!.compile();
   // },
-  loadSnarkyJS: async (args: {}) => {},
+  pingSnarky: async (args: {}) => {},
   zkpHashCredential: async (args: { credential: Credential }) => {
     function hashStringToBigInt(input: string): bigint {
       const hash = crypto.createHash("sha256");
       hash.update(input);
       const hashedString = hash.digest("hex");
       let hex = "0x" + hashedString;
-      return BigInt(hex);
+      return BigInt(hex) / BigInt(10);
     }
 
     function hashStringToField(input: string): Field {
-      return Field(hashStringToBigInt(input));
+      return Field(hashStringToBigInt(input) / BigInt(10));
     }
 
     function credentialToFields(credential: Credential): {
@@ -106,6 +106,91 @@ const functions = {
     console.log("args", args);
 
     return zkpHashCredential(args.credential);
+  },
+  proveCredentialMeetsRequirements: async (args: {
+    stringHashRequirement: number;
+    booleanRequirement: boolean;
+    intMin: number;
+    intMax: number;
+    stringHashVal: number;
+    booleanVal: boolean;
+    intVal: number;
+  }) => {
+    let CredentialProver = Experimental.ZkProgram({
+      publicInput: Field,
+
+      methods: {
+        proveCredentialMeetsRequirements: {
+          privateInputs: [Field, Bool, Field, Field, Field, Bool, Field],
+
+          method(
+            requirementsHash: Field,
+            stringHashRequirement: Field,
+            booleanRequirement: Bool,
+            intMin: Field,
+            intMax: Field,
+            stringHashVal: Field,
+            booleanVal: Bool,
+            intVal: Field
+          ) {
+            Poseidon.hash([
+              stringHashRequirement,
+              booleanRequirement.toField(),
+              intMin,
+              intMax,
+            ]).assertEquals(requirementsHash);
+            stringHashRequirement.assertEquals(stringHashVal);
+            booleanRequirement.assertEquals(booleanVal);
+            intMin.assertLessThanOrEqual(intVal);
+            intMax.assertGreaterThanOrEqual(intVal);
+          },
+        },
+      },
+    });
+
+    console.log("compiling");
+    await CredentialProver.compile();
+
+    console.log(
+      "data dump: ",
+      JSON.stringify({
+        stringHashRequirement: args.stringHashRequirement.toString(),
+        booleanRequirement: args.booleanRequirement,
+        intMin: args.intMin,
+        intMax: args.intMax,
+        stringHashVal: args.stringHashVal.toString(),
+        booleanVal: args.booleanVal,
+        intVal: args.intVal,
+      })
+    );
+
+    console.log("args.intMin", args.intMin);
+    console.log("args.intMax", args.intMax);
+
+    console.log("proving 1");
+    let ProofClass = Experimental.ZkProgram.Proof(CredentialProver);
+    console.log("proving 2");
+    try {
+      let proof = await CredentialProver.proveCredentialMeetsRequirements(
+        Poseidon.hash([
+          Field(args.stringHashRequirement),
+          Bool(args.booleanRequirement).toField(),
+          Field(args.intMin),
+          Field(args.intMax),
+        ]),
+        Field(args.stringHashRequirement),
+        Bool(args.booleanRequirement),
+        Field(args.intMin),
+        Field(args.intMax),
+        Field(args.stringHashVal),
+        Bool(args.booleanVal),
+        Field(args.intVal)
+      );
+      console.log("proof", proof);
+      return proof.toJSON().proof;
+    } catch (e) {
+      return "failed: " + e!.toString();
+    }
   },
 };
 

@@ -14,10 +14,14 @@ import {
   BellIcon,
   CalendarIcon,
   ChartPieIcon,
+  CheckCircleIcon,
   Cog6ToothIcon,
   DocumentDuplicateIcon,
+  DocumentTextIcon,
   FolderIcon,
   HomeIcon,
+  KeyIcon,
+  PaperAirplaneIcon,
   UsersIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -102,12 +106,16 @@ export const GlobalStateProvider = ({ children }: { children: ReactNode }) => {
 const navigation = [
   {
     name: "Credential Structures",
-    icon: HomeIcon,
+    icon: DocumentTextIcon,
     component: <CredentialStructuresTab />,
   },
-  { name: "Credentials", icon: HomeIcon, component: <CredentialsTab /> },
-  { name: "Proof Requests", icon: HomeIcon, component: <ProofRequestsTab /> },
-  { name: "Proofs", icon: HomeIcon, component: <ProofsTab /> },
+  { name: "Credentials", icon: KeyIcon, component: <CredentialsTab /> },
+  {
+    name: "Proof Requests",
+    icon: PaperAirplaneIcon,
+    component: <ProofRequestsTab />,
+  },
+  { name: "Proofs", icon: CheckCircleIcon, component: <ProofsTab /> },
 ];
 
 export default function Page() {

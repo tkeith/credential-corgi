@@ -30,12 +30,12 @@ const IssueCredentialForm: React.FC = () => {
   useEffect(() => {
     const fetchStructures = async () => {
       try {
-        load("Fetching credential structures...");
+        // load("Fetching credential structures...");
         const response = await axios.post("/api", {
           action: "get-credential-structure-list",
         });
         setStructures(response.data.list);
-        stopLoad();
+        // stopLoad();
       } catch (error) {
         console.error(error);
       }
@@ -107,9 +107,16 @@ const IssueCredentialForm: React.FC = () => {
     load("Hashing credential using Poseidon...");
 
     (async function () {
-      const hash: string = await snarkyPoker(async function () {
-        return await zkappWorkerClient!.zkpHashCredential(parsedValues);
+      await snarkyPoker(async function () {
+        return await zkappWorkerClient!.pingSnarky();
       });
+
+      // const hash: string = await snarkyPoker(async function () {
+      //   return await zkappWorkerClient!.zkpHashCredential(parsedValues);
+      // });
+      const hash: string = (await zkappWorkerClient!.zkpHashCredential(
+        parsedValues
+      )) as string;
 
       console.log("hash type", typeof hash);
 
