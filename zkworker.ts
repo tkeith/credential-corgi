@@ -90,7 +90,7 @@ const functions = {
       });
     }
 
-    function zkpHashCredential(credential: Credential): Field {
+    function zkpHashCredential(credential: Credential): string {
       console.log("debug 2", credential);
 
       const sorted = sortedCredentialValues(credential);
@@ -100,7 +100,7 @@ const functions = {
 
       return Poseidon.hash(
         credentialArrayToFields(sortedCredentialValues(credential))
-      );
+      ).toString();
     }
 
     console.log("args", args);

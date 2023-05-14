@@ -3,6 +3,7 @@ import axios from "axios";
 import { useGlobalState } from "@/app/page";
 import ZkappWorkerClient from "@/zkclient";
 import { snarkyPoker } from "@/utils";
+import { Field } from "snarkyjs";
 
 interface Structure {
   fullkey: string;
@@ -17,6 +18,10 @@ const IssueCredentialForm: React.FC = () => {
   );
   const [formValues, setFormValues] = useState<{ [key: string]: any }>({});
   const [error, setError] = useState<string | null>(null);
+  const [credential, setCredential] = useState<{ [key: string]: any } | null>(
+    null
+  );
+  const [credentialHash, setCredentialHash] = useState<string | null>(null);
 
   const zkappWorkerClient = new ZkappWorkerClient();
 
@@ -96,12 +101,25 @@ const IssueCredentialForm: React.FC = () => {
     }
 
     console.log(JSON.stringify(parsedValues));
-    (async function () {
 
-      await snarkyPoker(async function () {
-        console.log("start hash");
-        console.log(await zkappWorkerClient!.zkpHashCredential(parsedValues));
+    load("Hashing credential using Poseidon...");
+
+    (async function () {
+      const hash: string = await snarkyPoker(async function () {
+        return await zkappWorkerClient!.zkpHashCredential(parsedValues);
       });
+
+      console.log("hash type", typeof hash);
+
+      setCredential(parsedValues);
+      setCredentialHash(hash);
+      console.log("credentialHash from state: ", credentialHash);
+      console.log(
+        "credentialHash from state -- json: ",
+        JSON.stringify(credentialHash)
+      );
+
+      stopLoad();
     })();
   };
 
@@ -158,6 +176,21 @@ const IssueCredentialForm: React.FC = () => {
           </>
         )}
       </form>
+      {credentialHash && (
+        <>
+          <h1 className="my-4 text-corgi font-bold text-xl">
+            Credential issued
+          </h1>
+          <p>Credential (send this to the user):</p>
+          <pre className="bg-gray-200 p-4 rounded-md">
+            <code>{JSON.stringify(credential, null, 2)}</code>
+          </pre>
+          <p>Poseidon hash:</p>
+          <pre className="bg-gray-200 p-4 rounded-md">
+            <code>{credentialHash}</code>
+          </pre>
+        </>
+      )}
     </div>
   );
 };
