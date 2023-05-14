@@ -8,6 +8,10 @@ const GENERATE_STRUCTURE_PROMPT = readFileSync(
   "prompts/generate-structure.md"
 ).toString();
 
+const GENERATE_REQUEST_PROMPT = readFileSync(
+  "prompts/generate-request.md"
+).toString();
+
 const openai = new openailib.OpenAIApi(
   new openailib.Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -46,6 +50,13 @@ export async function POST(request: Request) {
     jsonOut.list = db;
   }
 
+  if (jsonIn.action == "generate-request") {
+    const fullkey = jsonIn.fullkey;
+    const structure = jsonIn.structure;
+    const details = jsonIn.details;
+    jsonOut.request = await generateRequest(fullkey, structure, details);
+  }
+
   return NextResponse.json(jsonOut);
 }
 
@@ -68,6 +79,43 @@ const generateCredentialStructure = async (prompt: string) => {
   const result = chat.data.choices[0]?.message!.content;
 
   return result;
+};
+
+const generateRequest = async (
+  fullkey: string,
+  structure: string,
+  details: string
+) => {
+  const userPrompt = `# credential structure\n\n${JSON.stringify(
+    JSON.parse(structure)
+  )}\n\n\n\n# requirements description\n\n${details}\n\n`;
+  console.log("userPrompt", userPrompt);
+  const chat = await openai.createChatCompletion({
+    model: "gpt-4",
+    temperature: 0.3,
+    max_tokens: 256,
+    top_p: 1,
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    messages: [
+      {
+        role: "system",
+        content: GENERATE_REQUEST_PROMPT,
+      },
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ],
+  });
+  console.log(JSON.stringify(chat.data));
+
+  let resultRaw = chat.data.choices[0]?.message!.content;
+
+  let result = JSON.parse(resultRaw);
+  result.fullkey = fullkey;
+
+  return JSON.stringify(result, null, 2);
 };
 
 const saveCredentialStructure = async (fullkey: string, structure: string) => {

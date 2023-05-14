@@ -72,3 +72,20 @@ export async function snarkyPoker(g: () => Promise<any>): Promise<any> {
     const intervalId = window.setInterval(innerFn, 500);
   });
 }
+
+export function stringToHex(input: string) {
+  let result = "";
+  for (let i = 0; i < input.length; i++) {
+    // Convert each character to hexadecimal and pad with a leading zero if necessary
+    result += input.charCodeAt(i).toString(16).padStart(2, "0");
+  }
+  return result;
+}
+
+export function hexToString(hex: string) {
+  let result = "";
+  for (let i = 0; i < hex.length; i += 2) {
+    result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+  }
+  return result;
+}

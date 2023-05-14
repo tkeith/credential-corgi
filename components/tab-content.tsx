@@ -1,5 +1,7 @@
 import CreateCredentialStructureForm from "@/components/CreateCredentialStructureForm";
 import IssueCredentialForm from "./IssueCredentialForm";
+import ProofRequestForm from "./ProofRequestForm";
+import ProofForm from "./ProofForm";
 
 export const CredentialStructuresTab: React.FC = () => {
   return <CreateCredentialStructureForm />;
@@ -8,20 +10,8 @@ export const CredentialsTab: React.FC = () => {
   return <IssueCredentialForm />;
 };
 export const ProofRequestsTab: React.FC = () => {
-  return (
-    <div>
-      {/* tab header */}
-      <h2 className="text-xl font-bold">Proof Requests</h2>
-      {/* tab content */}
-    </div>
-  );
+  return <ProofRequestForm />;
 };
 export const ProofsTab: React.FC = () => {
-  return (
-    <div>
-      {/* tab header */}
-      <h2 className="text-xl font-bold">Proofs</h2>
-      {/* tab content */}
-    </div>
-  );
+  return <ProofForm />;
 };
