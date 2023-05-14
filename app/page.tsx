@@ -7,6 +7,7 @@ import {
   useContext,
   ReactNode,
   FC,
+  useEffect,
 } from "react";
 import { Dialog, Menu, Tab, Transition } from "@headlessui/react";
 import {
@@ -122,6 +123,10 @@ export default function Page() {
   const { state, setState } = useGlobalState();
   const { address, connector, isConnected } = useAccount();
   const { chain, chains } = useNetwork();
+
+  useEffect(() => {
+    if (chain) console.log("chain.network", chain.network);
+  });
 
   return (
     <>

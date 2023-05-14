@@ -1,6 +1,4 @@
-export const CONTRACT_ADDRESSES: { [key: string]: string } = {
-  "optimism-goerli": "0x041d1c4a7B6099A63f4291e22967B25874D39Efb",
-};
+export const CONTRACT_ADDRESS = "0x041d1c4a7B6099A63f4291e22967B25874D39Efb";
 
 export const ABI = [
   {

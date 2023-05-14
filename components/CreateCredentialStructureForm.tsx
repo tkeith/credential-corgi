@@ -8,7 +8,7 @@ import {
   useWaitForTransaction,
   useAccount,
 } from "wagmi";
-import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
+import { ABI, CONTRACT_ADDRESS } from "@/contracts";
 import {
   hashString,
   hashStringToHexString,
@@ -44,7 +44,7 @@ const CreateCredentialStructureForm: React.FC = () => {
   };
 
   const { data, write } = useContractWrite({
-    address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
+    address: CONTRACT_ADDRESS,
     abi: ABI,
     functionName: "createEntity",
   });

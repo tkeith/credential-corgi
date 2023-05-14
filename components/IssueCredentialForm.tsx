@@ -5,7 +5,7 @@ import ZkappWorkerClient from "@/zkclient";
 import { hashStringToHexString, snarkyPoker } from "@/utils";
 import { Field } from "snarkyjs";
 import { useContractWrite, useNetwork, useWaitForTransaction } from "wagmi";
-import { ABI, CONTRACT_ADDRESSES } from "@/contracts";
+import { ABI, CONTRACT_ADDRESS } from "@/contracts";
 
 interface Structure {
   fullkey: string;
@@ -135,7 +135,7 @@ const IssueCredentialForm: React.FC = () => {
   const { chain, chains } = useNetwork();
 
   const { data, write } = useContractWrite({
-    address: CONTRACT_ADDRESSES[chain!.network] as `0x${string}`,
+    address: CONTRACT_ADDRESS,
     abi: ABI,
     functionName: "createEntity",
   });
