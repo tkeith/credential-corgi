@@ -67,7 +67,7 @@ const CreateRequestForm: React.FC = () => {
           onChange={(e) => setSelectedStructure(e.target.value)}
           className="focus:ring-corgi block w-full sm:text-sm border-gray-300 rounded-md border p-2 focus:border-corgi focus:outline-none focus:ring-1"
         >
-          <option value="">Select a structure</option>
+          <option value="">Select a structure...</option>
           {structures.map((structure) => (
             <option key={structure.fullkey} value={structure.fullkey}>
               {structure.fullkey}
@@ -98,6 +98,21 @@ const CreateRequestForm: React.FC = () => {
           </>
         )}
       </form>
+      {selectedStructure && (
+        <div>
+          <h1 className="my-4 text-corgi font-bold text-xl">
+            Structure of Selected Credential
+          </h1>
+          <pre className="bg-gray-200 p-4 rounded-md">
+            <code>
+              {
+                structures.find((s) => s.fullkey === selectedStructure)
+                  ?.structure!
+              }
+            </code>
+          </pre>
+        </div>
+      )}
       {requestString && (
         <div>
           <h1 className="my-4 text-corgi font-bold text-xl">
