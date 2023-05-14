@@ -164,7 +164,7 @@ const IssueCredentialForm: React.FC = () => {
     write({
       args: [
         "certification:" + credentialHash,
-        hashStringToHexString(credentialHash!),
+        "0x" + hashStringToHexString(credentialHash!),
       ],
     });
   };
@@ -232,7 +232,7 @@ const IssueCredentialForm: React.FC = () => {
             <code>{JSON.stringify(credential, null, 2)}</code>
           </pre>
           <p>Poseidon hash:</p>
-          <pre className="bg-gray-200 p-4 rounded-md">
+          <pre className="bg-gray-200 p-4 rounded-md mb-2">
             <code>{credentialHash}</code>
           </pre>
           <button
