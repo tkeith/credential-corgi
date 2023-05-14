@@ -3,6 +3,7 @@
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
     "@nomicfoundation/hardhat-verify": "^1.0.0",
+    "@worldcoin/idkit": "^0.4.9",
     "dotenv": "^16.0.3"
   }
 }
